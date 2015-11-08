@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		23A86E0E1BE6F254005ED095 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 23A86E0D1BE6F254005ED095 /* main.cpp */; };
+		23A86E151BE6F3E4005ED095 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23A86E141BE6F3E3005ED095 /* OpenGL.framework */; };
+		23A86E171BE6F3EC005ED095 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23A86E161BE6F3EC005ED095 /* GLUT.framework */; };
+		23A86E191BE6F3F3005ED095 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23A86E181BE6F3F3005ED095 /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +28,9 @@
 /* Begin PBXFileReference section */
 		23A86E0A1BE6F254005ED095 /* Zombified */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Zombified; sourceTree = BUILT_PRODUCTS_DIR; };
 		23A86E0D1BE6F254005ED095 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		23A86E141BE6F3E3005ED095 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		23A86E161BE6F3EC005ED095 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		23A86E181BE6F3F3005ED095 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +38,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				23A86E191BE6F3F3005ED095 /* Cocoa.framework in Frameworks */,
+				23A86E171BE6F3EC005ED095 /* GLUT.framework in Frameworks */,
+				23A86E151BE6F3E4005ED095 /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,6 +50,9 @@
 		23A86E011BE6F252005ED095 = {
 			isa = PBXGroup;
 			children = (
+				23A86E181BE6F3F3005ED095 /* Cocoa.framework */,
+				23A86E161BE6F3EC005ED095 /* GLUT.framework */,
+				23A86E141BE6F3E3005ED095 /* OpenGL.framework */,
 				23A86E0C1BE6F254005ED095 /* Zombified */,
 				23A86E0B1BE6F254005ED095 /* Products */,
 			);
