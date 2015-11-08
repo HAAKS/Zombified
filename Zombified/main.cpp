@@ -9,13 +9,14 @@ void Grid();
 void Keyboard(unsigned char key, int x, int y);
 void HighlightTheTile();
 void Timer(int value);
-void IsDefender(); //keeps track of where defenders are
+void IsPresent(); //keeps track of where defenders are
 void IsResourceGatherer(); //keeps track of where RGs are
 void Gettingcorrespondingaxes(int row, int column); //have the row and column and get the coordinates
 
 float zoomin=200;
 float rotangle;
 bool defenders [6][10]; //to keep track which tile has defenders
+bool resourcegatherers [6][10];
 int row;
 int column;
 GLboolean pause = false;
@@ -31,7 +32,12 @@ void Keyboard(unsigned char key, int x, int y){
 
     if(key=='d'){
         defenders[row][column] = true;
-//        std::cout << " THE ROW IN DEFENDER IS : " <<row;
+        column =0;
+        row = 0;
+    }
+    if(key=='r'){
+        resourcegatherers[row][column] = true;
+        //        std::cout << " THE ROW IN DEFENDER IS : " <<row;
         column =0;
         row = 0;
     }
@@ -49,8 +55,13 @@ void Keyboard(unsigned char key, int x, int y){
     
     glutPostRedisplay();
 }
-
-void IsDefender(){
+/*
+void IsResourceGatherer(){
+    int a;
+    int b;
+}
+*/
+void IsPresent(){
     int a ;
     int b ;
     for(a =1;a<6;a++){
@@ -65,6 +76,19 @@ void IsDefender(){
             }
         }
     }
+    for(a =1;a<6;a++){
+        for(b=1;b<10;b++){
+            if(resourcegatherers[a][b] == true){
+                Gettingcorrespondingaxes(a, b);
+                glPushMatrix();
+                glTranslatef(cordinates[0]+0.5, 0, cordinates[1]-1.5);
+                Gatherer();
+                glPopMatrix();
+                //std::cout << " A IS: "<<a; ;
+            }
+        }
+    }
+
 }
 
 void Grid(){
@@ -85,23 +109,30 @@ void Grid(){
         glVertex3f(18, 0, second);
         glEnd();
     }
-    glPopMatrix();
+        glPopMatrix();
    
 }
 
 void Gatherer(){
-    int i;
-    for(i =0; i<360*5;i++){
+        int i;
+        glPushMatrix();
+        glRotatef(rotangle, 0, 1, 0);
         glPushMatrix();
         glScaled(0.5, 0.5, 0.5);
-        glTranslatef(0, 0.01*i, 0);
-        glRotatef(i, 0, 1, 0);
-        glTranslatef(2, 0, 0);
-        glColor3f(0.5f, 0.5f, 0.5f);
-        glutSolidSphere(0.25, 25, 25);
+        glTranslatef(-0.20,4, 0);
+        glutSolidSphere(0.7, 6, 5);
         glPopMatrix();
+        for(i =0; i<360*5;i++){
+            glPushMatrix();
+            glScaled(0.1, 0.1, 0.1);
+            glTranslatef(0, 0.01*i, 0);
+            glRotatef(i, 0, 1, 0);
+            glTranslatef(2, 0, 0);
+            glColor3f(0.5f, 0.5f, 0.5f);
+            glutSolidSphere(0.40, 25, 25);
+            glPopMatrix();
     }
-
+        glPopMatrix();
 }
 
 void Defender(){
@@ -116,7 +147,6 @@ void Defender(){
     for(j =0; j<15;j++){
         glPushMatrix();
         glTranslatef(0, j, 0);
-        glColor3f(1.0f, 0.0f, 0.0f);
         glutSolidSphere(1.5, 30, 30);
         glPopMatrix();
     }
@@ -200,22 +230,13 @@ void Attacker(){
 void Display(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Grid();
-    IsDefender();
+    IsPresent();
     if(row !=0 && column !=0)
     {
         HighlightTheTile();
     }
-  //  glPushMatrix();
-  //  glRotatef(rotangle, 0, 1, 0);
- //   glScaled(0.5, 0.5, 0.5);
-  //  Gatherer();
- //   glTranslatef(-0.25, 9, 0);
-   // glutSolidSphere(1.5, 6, 5);
-  //  glPopMatrix();
-  //  glPushMatrix();
-   // glTranslatef(x+0.5, 0, z-1.);
-    // glPopMatrix();
-
+    
+    Gatherer();
     if(moveattackerx >=-11.5){ //moves as long as the object didnt reach the end
     glPushMatrix();
     glTranslatef(moveattackerx, 1, moveattackerz);
