@@ -1,7 +1,7 @@
 #include <GLUT/glut.h>
 #include <iostream>
 #include <random>
-//eshm3na when I stopped the if for attacker it disappeared opposite to the attacker!
+//eshm3na when I stopped the if for attacker it disappeared opposite to the attacker!??
 void Gatherer();
 void Defender(); //draws the defender
 void Attacker();
@@ -9,58 +9,73 @@ void Grid();
 void Keyboard(unsigned char key, int x, int y);
 void HighlightTheTile();
 void Timer(int value);
-void IsPresent(); //keeps track of where defenders are
-void IsResourceGatherer(); //keeps track of where RGs are
+void IsPresent(); //keeps track of where defenders & RG's are
 void Gettingcorrespondingaxes(int row, int column); //have the row and column and get the coordinates
+void Bullets();
 
 float zoomin=200;
 float rotangle;
 bool defenders [6][10]; //to keep track which tile has defenders
 bool resourcegatherers [6][10];
+bool startbullet[6][10];
+int attacktime[6][10];
 int row;
 int column;
 GLboolean pause = false;
 float moveattackerx =6;
-float moveattackerz =0;
+int moveattackerz =0;
 int cordinates[2]; //carrying the coordinates from rows and columns
 int x;
 int z;
+int kills;
+float movebullet;
 
 //y is the row and x is the column
 void Keyboard(unsigned char key, int x, int y){
     int valueofchar = key-48;
 
     if(key=='d'){
+        if(resourcegatherers[row][column] == true){
+           resourcegatherers[row][column] = false;
+        }
         defenders[row][column] = true;
         column =0;
         row = 0;
     }
+    if(key=='p' && !pause){
+        pause = true;
+    }
+    else if(key=='p' && pause){
+        pause = false;
+    }
+
     if(key=='r'){
+        if(defenders[row][column] == true){
+            defenders[row][column] = false;
+        }
         resourcegatherers[row][column] = true;
-        //        std::cout << " THE ROW IN DEFENDER IS : " <<row;
+        column =0;
+        row = 0;
+    }
+    if(key=='c'){
+        defenders[row][column] = false;
+        resourcegatherers[row][column] = false;
         column =0;
         row = 0;
     }
     
     if(row==0 && valueofchar > 0 && valueofchar <6){
         row=key-48;
-        std::cout << " THE ROW IS : " <<row; ;
+ //       std::cout << " THE ROW IS : " <<row; ;
 
     }
     else if(valueofchar > 0 && valueofchar <10 && row !=0) {
         column=key-48;
         
     }
-  
-    
     glutPostRedisplay();
 }
-/*
-void IsResourceGatherer(){
-    int a;
-    int b;
-}
-*/
+
 void IsPresent(){
     int a ;
     int b ;
@@ -72,23 +87,27 @@ void IsPresent(){
                  glTranslatef(cordinates[0]+0.5, 0, cordinates[1]-1.5);
                  Defender();
                  glPopMatrix();
-                //std::cout << " A IS: "<<a; ;
+                 glPushMatrix();
+                 glTranslatef(cordinates[0]+0.7+movebullet, 1, cordinates[1]-1.5);
+                 Bullets();
+                 glPopMatrix();
             }
-        }
-    }
-    for(a =1;a<6;a++){
-        for(b=1;b<10;b++){
             if(resourcegatherers[a][b] == true){
                 Gettingcorrespondingaxes(a, b);
                 glPushMatrix();
                 glTranslatef(cordinates[0]+0.5, 0, cordinates[1]-1.5);
                 Gatherer();
                 glPopMatrix();
-                //std::cout << " A IS: "<<a; ;
             }
         }
     }
+}
 
+void Bullets(){
+    glPushMatrix();
+    glColor3b(1, 0, 0);
+    glutSolidSphere(0.25, 7, 7);
+    glPopMatrix();
 }
 
 void Grid(){
@@ -120,7 +139,7 @@ void Gatherer(){
         glPushMatrix();
         glScaled(0.5, 0.5, 0.5);
         glTranslatef(-0.20,4, 0);
-        glutSolidSphere(0.7, 6, 5);
+        glutSolidSphere(0.7, 5, 5);
         glPopMatrix();
         for(i =0; i<360*5;i++){
             glPushMatrix();
@@ -129,7 +148,7 @@ void Gatherer(){
             glRotatef(i, 0, 1, 0);
             glTranslatef(2, 0, 0);
             glColor3f(0.5f, 0.5f, 0.5f);
-            glutSolidSphere(0.40, 25, 25);
+            glutSolidSphere(0.90, 2, 2);
             glPopMatrix();
     }
         glPopMatrix();
@@ -228,6 +247,7 @@ void Attacker(){
 }
 
 void Display(void) {
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Grid();
     IsPresent();
@@ -236,7 +256,6 @@ void Display(void) {
         HighlightTheTile();
     }
     
-    Gatherer();
     if(moveattackerx >=-11.5){ //moves as long as the object didnt reach the end
     glPushMatrix();
     glTranslatef(moveattackerx, 1, moveattackerz);
@@ -271,16 +290,30 @@ void Gettingcorrespondingaxes(int row, int column){
     }
     for(i =0;i<row;i++){
         z+=2;
-        //       std::cout<<" THIS IS HERE Y"<<z;
+        //std::cout<<" THIS IS HERE Y"<<z;
     }
      cordinates[0] =x;
      cordinates[1] = z;
 }
 
 void Anim() {
+    int present;
+    if(!pause){
     rotangle+=2;
     if(moveattackerz !=0){
         moveattackerx-=0.1;
+        for(present =0;present<10;present++){
+            defenders[present][moveattackerz];
+        }
+    }
+        if(movebullet >= 17)
+           movebullet=0;
+        else movebullet+=0.1;
+    
+      //  if(cordinates[0]+0.7+movebullet == moveattackerx){
+        //    std::cout<<"HIT HARD";
+        //}
+    
     }
     glutPostRedisplay();
 }
