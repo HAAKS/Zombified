@@ -13,7 +13,8 @@ void Timer(int value);
 void IsPresent(); //keeps track of where defenders & RG's are
 void Gettingcorrespondingaxes(int row, int column); //have the row and column and get the coordinates
 void Hit(); //checks for the collision and fires the bullets
-void Gettingrowsandcolumns();//gets axes and get rows
+void Settingrowsdead(int coresponsingrow);//KILLS THE ROW
+void Killtherow(int n);
 
 float zoomin=200;
 float rotangle;
@@ -23,6 +24,7 @@ bool bullet[6][10];
 int attacktime[6][10];
 int row;
 int column;
+bool destroyedrows [10]; //checks which row is destroyed
 GLboolean pause = false;
 float moveattackerx =6;
 int moveattackerz =0;
@@ -38,6 +40,7 @@ int b ; //looper variable for getting axes of defenders
 float R =0;//color of car
 float G =0;
 float B =0;
+int attackerwin=0; //a counter to keep track of how many times the attacker reached the house
 
 //y is the row and x is the column
 void Keyboard(unsigned char key, int x, int y){
@@ -140,7 +143,6 @@ void Hit(){
             bullet[a][b]=false;
         }
 
-        
 }
         if(hits==4){
             moveattackerx = -12;
@@ -285,7 +287,7 @@ void Attacker(){
 }
 
 void Display(void) {
-    
+    int counter ;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Grid();
     IsPresent();
@@ -302,13 +304,47 @@ void Display(void) {
     else if(moveattackerx<-11.5){
         moveattackerz =0;
     }
-    if(moveattackerx <=11 && moveattackerz){
-        row=moveattackerz;
-        
+
+    if(moveattackerx <-11.4){
+        destroyedrows[moveattackerz] =true;
+        attackerwin++;
+        }
+    
+    for(counter =1;counter<12;counter+=2){
+        if(destroyedrows[counter]==true){
+            Killtherow(counter);
+        }
     }
-   
     glFlush();
 }
+
+void Killtherow(int counter){
+    glPushMatrix();
+    glBegin(GL_POLYGON);
+    glVertex3f(8, 0, counter-1);
+    glVertex3f(8, 0, counter+1);
+    glVertex3f(-10, 0, counter+1);
+    glVertex3f(-10, 0, counter-1);
+    glEnd();
+    glPopMatrix();
+    std::cout<<" THE COUNTER IS KILLED "<<counter;
+
+}
+//void Settingrowsdead(int h){
+//    switch(h){
+//        case 1: destroyedrows[1]=true;
+//            break;
+//        case 3: destroyedrows[2]=true;
+//            break;
+//        case 5: destroyedrows[3]=true;
+//            break;
+//        case 7: destroyedrows[4]=true;
+//            break;
+//        case 9: destroyedrows[5]=true;
+//            break;
+//    }
+//    
+//}
 
 void HighlightTheTile(){
         Gettingcorrespondingaxes(row, column);
@@ -352,23 +388,27 @@ void Anim() {
 }
 
 void Timer(int value) {
-     hits=0;
+    hits=0;
     R=0;
     G=0;
     B=0;
+    do{
      checkforeven = rand() % 10; //gets the random number to check later if even or odd
-    moveattackerz = checkforeven ; //get a random z number
+     moveattackerz = checkforeven ; //get a random z number
     if(moveattackerz ==0) {//random number is 0, then make the z =1
         moveattackerz =1;
         checkforeven =1;
     }
     else if(checkforeven%2==0){
         moveattackerz-=1;
-    }
+    }}
+    while(destroyedrows[moveattackerz]==true);
     moveattackerx=6; // re-initialize the x coordinate when the function is called so the attacker appear
     glutPostRedisplay();
     glutTimerFunc(10 * 1000, Timer, 0);
 }
+
+
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
