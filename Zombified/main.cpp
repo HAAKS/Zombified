@@ -45,33 +45,42 @@ int attackerwin=0; //a counter to keep track of how many times the attacker reac
 //y is the row and x is the column
 void Keyboard(unsigned char key, int x, int y){
     int valueofchar = key-48;
+    int temp;//to hold the row value -1 to compare with moveattackerz
+    Gettingcorrespondingaxes(row,0);
+    temp = cordinates[1]-1;
 
-    if(key=='d'){
+    if(key=='d' ){
         if(resourcegatherers[row][column] == true){
            resourcegatherers[row][column] = false;
         }
+        if(destroyedrows[temp] == false){
         defenders[row][column] = true;
         bullet[row][column]=true;
+        }
         column =0;
         row = 0;
     }
     if(key=='p' && !pause){
         pause = true;
     }
-    else if(key=='p' && pause){
+    else if(key=='p' && pause ){
         pause = false;
     }
 
-    if(key=='r'){
+    if(key=='r' ){
         if(defenders[row][column] == true){
             defenders[row][column] = false;
             bullet[row][column]=false;
         }
-        resourcegatherers[row][column] = true;
+        if(destroyedrows[temp] == false){
+            
+            resourcegatherers[row][column] = true;
+            bullet[row][column]=true;
+        }
         column =0;
         row = 0;
     }
-    if(key=='c'){
+    if(key=='c' ){
         defenders[row][column] = false;
         bullet[row][column]=false;
         resourcegatherers[row][column] = false;
@@ -85,12 +94,11 @@ void Keyboard(unsigned char key, int x, int y){
     }
     else if(valueofchar > 0 && valueofchar <10 && row !=0) {
         column=key-48;
-    }
+            }
     glutPostRedisplay();
 }
 
 void IsPresent(){
-  
     for(a =1;a<6;a++){
         for(b=1;b<10;b++){
             if(defenders[a][b] == true){
@@ -150,6 +158,7 @@ void Hit(){
         }
 }
 }
+
 void Grid(){
     float first;
     float second;
@@ -169,29 +178,169 @@ void Grid(){
         glEnd();
     }
         glPopMatrix();
-   
+}
+
+void Display(void) {
+    int counter ;
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    Grid();
+    IsPresent();
+    if(row !=0 && column !=0)
+    {
+        HighlightTheTile();
+    }
+    if(moveattackerx >=-11.5){ //moves as long as the object didnt reach the end
+    glPushMatrix();
+    glTranslatef(moveattackerx, 1, moveattackerz);
+    Attacker();
+    glPopMatrix();
+    }
+    else if(moveattackerx<-11.5){
+        moveattackerz =0;
+    }
+
+    if(moveattackerx <-11.4){
+        destroyedrows[moveattackerz] =true;
+        attackerwin++;
+        }
+    
+    for(counter =1;counter<12;counter+=2){
+        if(destroyedrows[counter]==true){
+            Killtherow(counter);
+        }
+    }
+    glFlush();
+}
+
+void Killtherow(int counter){
+    glPushMatrix();
+    glBegin(GL_POLYGON);
+    glVertex3f(8, 0, counter-1);
+    glVertex3f(8, 0, counter+1);
+    glVertex3f(-10, 0, counter+1);
+    glVertex3f(-10, 0, counter-1);
+    glEnd();
+    glPopMatrix();
+}
+
+//void Settingrowsdead(int h){
+//    switch(h){
+//        case 1: destroyedrows[1]=true;
+//            break;
+//        case 3: destroyedrows[2]=true;
+//            break;
+//        case 5: destroyedrows[3]=true;
+//            break;
+//        case 7: destroyedrows[4]=true;
+//            break;
+//        case 9: destroyedrows[5]=true;
+//            break;
+//    }
+//    
+//}
+
+void HighlightTheTile(){
+        Gettingcorrespondingaxes(row, column);
+        glBegin(GL_QUADS);
+        glVertex3f(x,0, z-2);
+        glVertex3f(x, 0, z);
+        glVertex3f(x+2, 0, z);
+        glVertex3f(x+2, 0, z-2);
+        glEnd();
+}
+
+void Gettingcorrespondingaxes(int row, int column){
+     z=0;
+     x =-12;
+    int i=0;
+    if(column!=0){
+    for(i=0;i<column;i++){ //to get column
+        x+=2;
+    }
+    }
+    for(i =0;i<row;i++){
+        z+=2;
+    }
+     cordinates[0] =x;
+     cordinates[1] = z;
+}
+
+void Anim() {
+    if(!pause){
+    rotangle+=2;
+    if(moveattackerz !=0){
+        moveattackerx-=0.1;
+    }
+        if(movebullet >= 17){
+            movebullet=0;
+        }
+        else movebullet+=0.5;
+    }
+    glutPostRedisplay();
+}
+
+void Timer(int value) {
+    hits=0;
+    R=0;
+    G=0;
+    B=0;
+    do{
+     checkforeven = rand() % 10; //gets the random number to check later if even or odd
+     moveattackerz = checkforeven ; //get a random z number
+    if(moveattackerz ==0) {//random number is 0, then make the z =1
+        moveattackerz =1;
+        checkforeven =1;
+    }
+    else if(checkforeven%2==0){
+        moveattackerz-=1;
+    }}
+    while(destroyedrows[moveattackerz]==true);
+    moveattackerx=6; // re-initialize the x coordinate when the function is called so the attacker appear
+    glutPostRedisplay();
+    glutTimerFunc(10 * 1000, Timer, 0);
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitWindowSize(900, 1000);
+    glutInitWindowPosition(150, 150);
+    glutCreateWindow("OpenGL - 3D Template");
+    glutDisplayFunc(Display);
+    glutKeyboardFunc(Keyboard);
+    glutTimerFunc(0, Timer, 0);
+    glutIdleFunc(Anim);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+    glEnable(GL_DEPTH_TEST);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45.0f, 300 / 300, 0.1f, 300.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(0.0f, 20.0f, 25.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    glutMainLoop();
 }
 
 void Gatherer(){
-        int i;
+    int i;
+    glPushMatrix();
+    glRotatef(rotangle, 0, 1, 0);
+    glPushMatrix();
+    glScaled(0.5, 0.5, 0.5);
+    glTranslatef(-0.20,4, 0);
+    glutSolidSphere(0.7, 5, 5);
+    glPopMatrix();
+    for(i =0; i<360*5;i++){
         glPushMatrix();
-        glRotatef(rotangle, 0, 1, 0);
-        glPushMatrix();
-        glScaled(0.5, 0.5, 0.5);
-        glTranslatef(-0.20,4, 0);
-        glutSolidSphere(0.7, 5, 5);
+        glScaled(0.1, 0.1, 0.1);
+        glTranslatef(0, 0.01*i, 0);
+        glRotatef(i, 0, 1, 0);
+        glTranslatef(2, 0, 0);
+        glColor3f(0.5f, 0.5f, 0.5f);
+        glutSolidSphere(0.90, 2, 2);
         glPopMatrix();
-        for(i =0; i<360*5;i++){
-            glPushMatrix();
-            glScaled(0.1, 0.1, 0.1);
-            glTranslatef(0, 0.01*i, 0);
-            glRotatef(i, 0, 1, 0);
-            glTranslatef(2, 0, 0);
-            glColor3f(0.5f, 0.5f, 0.5f);
-            glutSolidSphere(0.90, 2, 2);
-            glPopMatrix();
     }
-        glPopMatrix();
+    glPopMatrix();
 }
 
 void Defender(){
@@ -283,150 +432,4 @@ void Attacker(){
     glTranslatef(12, 4, 0);
     glutSolidDodecahedron();
     glPopMatrix();
-    
-}
-
-void Display(void) {
-    int counter ;
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    Grid();
-    IsPresent();
-    if(row !=0 && column !=0)
-    {
-        HighlightTheTile();
-    }
-    if(moveattackerx >=-11.5){ //moves as long as the object didnt reach the end
-    glPushMatrix();
-    glTranslatef(moveattackerx, 1, moveattackerz);
-    Attacker();
-    glPopMatrix();
-    }
-    else if(moveattackerx<-11.5){
-        moveattackerz =0;
-    }
-
-    if(moveattackerx <-11.4){
-        destroyedrows[moveattackerz] =true;
-        attackerwin++;
-        }
-    
-    for(counter =1;counter<12;counter+=2){
-        if(destroyedrows[counter]==true){
-            Killtherow(counter);
-        }
-    }
-    glFlush();
-}
-
-void Killtherow(int counter){
-    glPushMatrix();
-    glBegin(GL_POLYGON);
-    glVertex3f(8, 0, counter-1);
-    glVertex3f(8, 0, counter+1);
-    glVertex3f(-10, 0, counter+1);
-    glVertex3f(-10, 0, counter-1);
-    glEnd();
-    glPopMatrix();
-    std::cout<<" THE COUNTER IS KILLED "<<counter;
-
-}
-//void Settingrowsdead(int h){
-//    switch(h){
-//        case 1: destroyedrows[1]=true;
-//            break;
-//        case 3: destroyedrows[2]=true;
-//            break;
-//        case 5: destroyedrows[3]=true;
-//            break;
-//        case 7: destroyedrows[4]=true;
-//            break;
-//        case 9: destroyedrows[5]=true;
-//            break;
-//    }
-//    
-//}
-
-void HighlightTheTile(){
-        Gettingcorrespondingaxes(row, column);
-        glBegin(GL_QUADS);
-        glVertex3f(x,0, z-2);
-        glVertex3f(x, 0, z);
-        glVertex3f(x+2, 0, z);
-        glVertex3f(x+2, 0, z-2);
-        glEnd();
-}
-
-void Gettingcorrespondingaxes(int row, int column){
-     z=0;
-     x =-12;
-    int i=0;
-    if(column!=0){
-    for(i=0;i<column;i++){ //to get column
-        x+=2;
-    }
-    }
-    for(i =0;i<row;i++){
-        z+=2;
-    }
-     cordinates[0] =x;
-     cordinates[1] = z;
-}
-
-void Anim() {
-    if(!pause){
-    rotangle+=2;
-    if(moveattackerz !=0){
-        moveattackerx-=0.1;
-    }
-        if(movebullet >= 17){
-            movebullet=0;
-        }
-        else movebullet+=0.5;
-
-    }
-    glutPostRedisplay();
-}
-
-void Timer(int value) {
-    hits=0;
-    R=0;
-    G=0;
-    B=0;
-    do{
-     checkforeven = rand() % 10; //gets the random number to check later if even or odd
-     moveattackerz = checkforeven ; //get a random z number
-    if(moveattackerz ==0) {//random number is 0, then make the z =1
-        moveattackerz =1;
-        checkforeven =1;
-    }
-    else if(checkforeven%2==0){
-        moveattackerz-=1;
-    }}
-    while(destroyedrows[moveattackerz]==true);
-    moveattackerx=6; // re-initialize the x coordinate when the function is called so the attacker appear
-    glutPostRedisplay();
-    glutTimerFunc(10 * 1000, Timer, 0);
-}
-
-
-
-int main(int argc, char** argv) {
-    glutInit(&argc, argv);
-    glutInitWindowSize(900, 1000);
-    glutInitWindowPosition(150, 150);
-    glutCreateWindow("OpenGL - 3D Template");
-    glutDisplayFunc(Display);
-    glutKeyboardFunc(Keyboard);
-    glutTimerFunc(0, Timer, 0);
-    glutIdleFunc(Anim);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
-    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-    glEnable(GL_DEPTH_TEST);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(45.0f, 300 / 300, 0.1f, 300.0f);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(0.0f, 20.0f, 25.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-    glutMainLoop();
 }
