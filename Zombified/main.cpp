@@ -171,7 +171,7 @@ void Hit(){
         }
 }
         if(hits==4){
-            moveattackerx = -12;
+            moveattackerz = 0;
             kills++;
             resourceholder =resourceholder+20;
         }
@@ -208,13 +208,15 @@ void Display(void) {
     {
         HighlightTheTile();
     }
-    if(moveattackerz!=0){
-    if(moveattackerx >=-11.5){ //moves as long as the object didnt reach the end
+    if(moveattackerz!=0){ //after attackerwin++ it doesn't enter again until a new attacker is present
+    if(moveattackerx >=-11.4){ //moves as long as the object didnt reach the end
     glPushMatrix();
     glTranslatef(moveattackerx, 1, moveattackerz);
     Attacker();
     glPopMatrix();
+
     }
+        
     else if(moveattackerx<-11.5){ //check here the BUG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ANA HENA
         destroyedrows[moveattackerz] =true;
         attackerwin++;
@@ -227,10 +229,8 @@ void Display(void) {
         }
     }
     if(attackerwin ==3){
-        EndGame("Game is Over ya Amoor ! :D");
+       EndGame("Game is Over ya Amoor ! :D");
         pause = true;
-        std::cout<<" HERE IAM HENAA " << attackerwin;
-//pause = true;
     }
     Counter(-10, 10);
     DScreen("25", -6, 10); //display value of Defender
@@ -297,6 +297,7 @@ void Anim() {
     rotangle+=2;
     if(moveattackerz !=0){
         moveattackerx-=0.1;
+        std::cout<<" HERE IAM HENAA5: " << moveattackerx;
     }
         if(movebullet >= 17){
             movebullet=0;
