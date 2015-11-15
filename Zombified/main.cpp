@@ -2,6 +2,7 @@
 #include <iostream>
 #include <random>
 #include <stdlib.h>
+#include <stdio.h>
 
 void Gatherer();
 void Defender(); //draws the defender
@@ -13,8 +14,13 @@ void Timer(int value);
 void IsPresent(); //keeps track of where defenders & RG's are
 void Gettingcorrespondingaxes(int row, int column); //have the row and column and get the coordinates
 void Hit(); //checks for the collision and fires the bullets
-void Settingrowsdead(int coresponsingrow);//KILLS THE ROW
-void Killtherow(int n);
+int Settingrowsdead(int coresponsingrow);//KILLS THE ROW
+void Killtherow(int n); //overlaps the whole row with a rectangle to kill it
+void Display();
+void Anim();
+void Counter(std::string string, int x, int y);
+void DScreen(std::string string, int x, int y);
+void RGScreen(std::string string, int x, int y);
 
 float zoomin=200;
 float rotangle;
@@ -31,8 +37,8 @@ int moveattackerz =0;
 int cordinates[2]; //carrying the coordinates from rows and columns
 int x;
 int z;
-int kills; //calculate kills
-int hits; //calculate hit times
+int kills; //calculate how many attackers died
+int hits; //calculate hit times of the bullet lel attacker
 float movebullet;
 int checkforeven;//for random numbers
 int a ; //looper variable for getting axes of defenders
@@ -41,8 +47,8 @@ float R =0;//color of car
 float G =0;
 float B =0;
 int attackerwin=0; //a counter to keep track of how many times the attacker reached the house
+std::string resources ="100";
 
-//y is the row and x is the column
 void Keyboard(unsigned char key, int x, int y){
     int valueofchar = key-48;
     int temp;//to hold the row value -1 to compare with moveattackerz
@@ -50,10 +56,8 @@ void Keyboard(unsigned char key, int x, int y){
     temp = cordinates[1]-1;
 
     if(key=='d' ){
-        if(resourcegatherers[row][column] == true){
-           resourcegatherers[row][column] = false;
-        }
-        if(destroyedrows[temp] == false){
+        resourcegatherers[row][column] = false;
+        if(destroyedrows[temp] == false){ //if the row is NOT destroyed then you can place defender
         defenders[row][column] = true;
         bullet[row][column]=true;
         }
@@ -66,14 +70,10 @@ void Keyboard(unsigned char key, int x, int y){
     else if(key=='p' && pause ){
         pause = false;
     }
-
     if(key=='r' ){
-        if(defenders[row][column] == true){
             defenders[row][column] = false;
             bullet[row][column]=false;
-        }
         if(destroyedrows[temp] == false){
-            
             resourcegatherers[row][column] = true;
             bullet[row][column]=true;
         }
@@ -87,7 +87,6 @@ void Keyboard(unsigned char key, int x, int y){
         column =0;
         row = 0;
     }
-    
     if(row==0 && valueofchar > 0 && valueofchar <6){
         row=key-48;
 
@@ -97,7 +96,7 @@ void Keyboard(unsigned char key, int x, int y){
             }
     glutPostRedisplay();
 }
-
+//checkes when defender/RG and attacker collides.
 void IsPresent(){
     for(a =1;a<6;a++){
         for(b=1;b<10;b++){
@@ -108,13 +107,20 @@ void IsPresent(){
                  Defender();
                  glPopMatrix();
                  Hit();
-            }
+                if((cordinates[1]-1 ==moveattackerz) && ((cordinates[0]+0.5) >= moveattackerx)) {
+                    defenders[a][b]=false;
+                }
+                        }
             if(resourcegatherers[a][b] == true){
                 Gettingcorrespondingaxes(a, b);
                 glPushMatrix();
                 glTranslatef(cordinates[0]+0.5, 0, cordinates[1]-1.5);
                 Gatherer();
                 glPopMatrix();
+                if((cordinates[1]-1 ==moveattackerz) && ((cordinates[0]+0.5) >= moveattackerx)) {
+                    resourcegatherers[a][b]=false;
+                }
+
             }
         }
     }
@@ -139,7 +145,6 @@ void Hit(){
             G+=0.2;
             B+=0.2;
             bullet[a][b]=false;
-
         }
     }
     else if ((holderofbullet>0) && (moveattackerx>0)){
@@ -150,7 +155,6 @@ void Hit(){
             B+=0.2;
             bullet[a][b]=false;
         }
-
 }
         if(hits==4){
             moveattackerx = -12;
@@ -181,7 +185,7 @@ void Grid(){
 }
 
 void Display(void) {
-    int counter ;
+    int counter;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Grid();
     IsPresent();
@@ -189,6 +193,7 @@ void Display(void) {
     {
         HighlightTheTile();
     }
+ 
     if(moveattackerx >=-11.5){ //moves as long as the object didnt reach the end
     glPushMatrix();
     glTranslatef(moveattackerx, 1, moveattackerz);
@@ -196,19 +201,19 @@ void Display(void) {
     glPopMatrix();
     }
     else if(moveattackerx<-11.5){
-        moveattackerz =0;
-    }
-
-    if(moveattackerx <-11.4){
         destroyedrows[moveattackerz] =true;
         attackerwin++;
-        }
-    
+        moveattackerz =0;
+    }
     for(counter =1;counter<12;counter+=2){
         if(destroyedrows[counter]==true){
             Killtherow(counter);
         }
     }
+    Counter(resources, -10, 10);
+    DScreen("25", -6, 10); //display value of Defender
+    RGScreen("50", 0, 10);//display value of RG
+    //EndGame("YOU ARE OUT");
     glFlush();
 }
 
@@ -223,20 +228,20 @@ void Killtherow(int counter){
     glPopMatrix();
 }
 
-//void Settingrowsdead(int h){
+//int Settingrowsdead(int h){
 //    switch(h){
-//        case 1: destroyedrows[1]=true;
+//        case 1: n=1;
 //            break;
-//        case 3: destroyedrows[2]=true;
+//        case 3: n=2;
 //            break;
-//        case 5: destroyedrows[3]=true;
+//        case 5: n=3;
 //            break;
-//        case 7: destroyedrows[4]=true;
+//        case 7: n=4;
 //            break;
-//        case 9: destroyedrows[5]=true;
+//        case 9: n=5;
 //            break;
 //    }
-//    
+//    return n;
 //}
 
 void HighlightTheTile(){
@@ -293,7 +298,8 @@ void Timer(int value) {
     }
     else if(checkforeven%2==0){
         moveattackerz-=1;
-    }}
+    }
+    }
     while(destroyedrows[moveattackerz]==true);
     moveattackerx=6; // re-initialize the x coordinate when the function is called so the attacker appear
     glutPostRedisplay();
@@ -432,4 +438,66 @@ void Attacker(){
     glTranslatef(12, 4, 0);
     glutSolidDodecahedron();
     glPopMatrix();
+}
+
+void Counter(std::string string, int x, int y) {
+    glRasterPos2d(x, y);
+    std::string text = "Resource: ";
+    int tol =text.length();
+    //int resourceholder = atoi(string.c_str());
+    // std::string s = std::to_string(42);
+    int len = string.length();
+    int i;
+    for(i=0;i<tol;i++){
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
+    }
+    for(i =0;i<len;i++){
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+    }
+    glutPostRedisplay();
+}
+
+void DScreen(std::string string, int x, int y) {
+    glRasterPos2d(x, y);
+    std::string text = "Defender cost is: ";
+    int tol =text.length();
+    //int resourceholder = atoi(string.c_str());
+    // std::string s = std::to_string(42);
+    int len = string.length();
+    int i;
+    for(i=0;i<tol;i++){
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
+    }
+    for(i =0;i<len;i++){
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+    }
+    glutPostRedisplay();
+}
+
+void RGScreen(std::string string, int x, int y) {
+    glRasterPos2d(x, y);
+    std::string text = "Resource Gatherer cost: ";
+    int tol =text.length();
+    //int resourceholder = atoi(string.c_str());
+    // std::string s = std::to_string(42);
+    int len = string.length();
+    int i;
+    for(i=0;i<tol;i++){
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
+    }
+    for(i =0;i<len;i++){
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+    }
+    glutPostRedisplay();
+}
+
+void EndGame(std::string string){
+    //if won !
+        glRasterPos2i(290,450);
+        int len = string.length();
+        int i;
+        for(i =0;i<len;i++){
+            glColor3b(1.0f, 0.9f,0.0f);
+            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+        }
 }
