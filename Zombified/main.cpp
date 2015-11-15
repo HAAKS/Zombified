@@ -21,6 +21,7 @@ void Anim();
 void Counter(int x, int y);
 void DScreen(std::string string, int x, int y);
 void RGScreen(std::string string, int x, int y);
+void EndGame(std::string string);
 
 float zoomin=200;
 float rotangle;
@@ -47,9 +48,9 @@ float R =0;//color of car
 float G =0;
 float B =0;
 int attackerwin=0; //a counter to keep track of how many times the attacker reached the house
-int resourceholder =100;
+int resourceholder =100; //to get the final value Resources(R) available
 int addresourceforgatherers=0;
-int timeforresource;
+int timeforresource; //In time function, so that every 20 seconds, its increments R from RG
 
 void Keyboard(unsigned char key, int x, int y){
     int valueofchar = key-48;
@@ -57,7 +58,7 @@ void Keyboard(unsigned char key, int x, int y){
     Gettingcorrespondingaxes(row,0);
     temp = cordinates[1]-1;
 
-    if(key=='d'){
+    if(key=='d'&& row!=0 && column!=0 &&!pause){
         if( resourcegatherers[row][column] == true){
             addresourceforgatherers--;
             resourcegatherers[row][column] = false;
@@ -77,7 +78,7 @@ void Keyboard(unsigned char key, int x, int y){
     else if(key=='p' && pause ){
         pause = false;
     }
-    if(key=='r' ){
+    if(key=='r' && row!=0 && column!=0 &&!pause){
             defenders[row][column] = false;
             bullet[row][column]=false;
         if(destroyedrows[temp] == false && resourceholder>=50){
@@ -89,7 +90,7 @@ void Keyboard(unsigned char key, int x, int y){
         column =0;
         row = 0;
     }
-    if(key=='c' ){
+    if(key=='c'&& row!=0 && column!=0 &&!pause){
         defenders[row][column] = false;
         bullet[row][column]=false;
         if( resourcegatherers[row][column] == true){
@@ -129,10 +130,6 @@ void IsPresent(){
                 glTranslatef(cordinates[0]+0.5, 0, cordinates[1]-1.5);
                 Gatherer();
                 glPopMatrix();
-              //  if(addresourceforgatherers==2){
-                   // resourceholder+=5;
-//             }
-
                 if((cordinates[1]-1 ==moveattackerz) && ((cordinates[0]+0.5) >= moveattackerx)) {
                     resourcegatherers[a][b]=false;
                         addresourceforgatherers--;
@@ -211,22 +208,29 @@ void Display(void) {
     {
         HighlightTheTile();
     }
- 
+    if(moveattackerz!=0){
     if(moveattackerx >=-11.5){ //moves as long as the object didnt reach the end
     glPushMatrix();
     glTranslatef(moveattackerx, 1, moveattackerz);
     Attacker();
     glPopMatrix();
     }
-    else if(moveattackerx<-11.5){
+    else if(moveattackerx<-11.5){ //check here the BUG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ANA HENA
         destroyedrows[moveattackerz] =true;
         attackerwin++;
         moveattackerz =0;
+    }
     }
     for(counter =1;counter<12;counter+=2){
         if(destroyedrows[counter]==true){
             Killtherow(counter);
         }
+    }
+    if(attackerwin ==3){
+        EndGame("Game is Over ya Amoor ! :D");
+        pause = true;
+        std::cout<<" HERE IAM HENAA " << attackerwin;
+//pause = true;
     }
     Counter(-10, 10);
     DScreen("25", -6, 10); //display value of Defender
@@ -513,8 +517,7 @@ void RGScreen(std::string string, int x, int y) {
 }
 
 void EndGame(std::string string){
-    //if won !
-        glRasterPos2i(290,450);
+        glRasterPos2i(-4,2);
         int len = string.length();
         int i;
         for(i =0;i<len;i++){
