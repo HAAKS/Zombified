@@ -18,7 +18,7 @@ int Settingrowsdead(int coresponsingrow);//KILLS THE ROW
 void Killtherow(int n); //overlaps the whole row with a rectangle to kill it
 void Display();
 void Anim();
-void Counter(std::string string, int x, int y);
+void Counter(int x, int y);
 void DScreen(std::string string, int x, int y);
 void RGScreen(std::string string, int x, int y);
 
@@ -47,21 +47,23 @@ float R =0;//color of car
 float G =0;
 float B =0;
 int attackerwin=0; //a counter to keep track of how many times the attacker reached the house
-std::string resources ="100";
-int resourceholder ;
+int resourceholder =100;
+int addresourceforgatherers=0;
+int timeforresource;
 
 void Keyboard(unsigned char key, int x, int y){
-    resourceholder = atoi(resources.c_str());
     int valueofchar = key-48;
     int temp;//to hold the row value -1 to compare with moveattackerz
     Gettingcorrespondingaxes(row,0);
     temp = cordinates[1]-1;
 
     if(key=='d'){
-        resourcegatherers[row][column] = false;
+        if( resourcegatherers[row][column] == true){
+            addresourceforgatherers--;
+            resourcegatherers[row][column] = false;
+        }
         if(destroyedrows[temp] == false && resourceholder>=25){
         resourceholder =resourceholder-25;
-        resources = std::to_string(resourceholder);
         defenders[row][column] = true;
         bullet[row][column]=true;
         }
@@ -80,9 +82,9 @@ void Keyboard(unsigned char key, int x, int y){
             bullet[row][column]=false;
         if(destroyedrows[temp] == false && resourceholder>=50){
             resourceholder =resourceholder-50;
-            resources = std::to_string(resourceholder);
             resourcegatherers[row][column] = true;
-            bullet[row][column]=true;
+         //   bullet[row][column]=true;
+            addresourceforgatherers++;
         }
         column =0;
         row = 0;
@@ -90,7 +92,10 @@ void Keyboard(unsigned char key, int x, int y){
     if(key=='c' ){
         defenders[row][column] = false;
         bullet[row][column]=false;
-        resourcegatherers[row][column] = false;
+        if( resourcegatherers[row][column] == true){
+            addresourceforgatherers--;
+            resourcegatherers[row][column] = false;
+        }
         column =0;
         row = 0;
     }
@@ -124,10 +129,15 @@ void IsPresent(){
                 glTranslatef(cordinates[0]+0.5, 0, cordinates[1]-1.5);
                 Gatherer();
                 glPopMatrix();
+              //  if(addresourceforgatherers==2){
+                   // resourceholder+=5;
+//             }
+
                 if((cordinates[1]-1 ==moveattackerz) && ((cordinates[0]+0.5) >= moveattackerx)) {
                     resourcegatherers[a][b]=false;
+                        addresourceforgatherers--;
                 }
-
+                
             }
         }
     }
@@ -166,9 +176,7 @@ void Hit(){
         if(hits==4){
             moveattackerx = -12;
             kills++;
-            resourceholder = atoi(resources.c_str());
             resourceholder =resourceholder+20;
-            resources = std::to_string(resourceholder);
         }
 }
 }
@@ -220,7 +228,7 @@ void Display(void) {
             Killtherow(counter);
         }
     }
-    Counter(resources, -10, 10);
+    Counter(-10, 10);
     DScreen("25", -6, 10); //display value of Defender
     RGScreen("50", 0, 10);//display value of RG
     //EndGame("YOU ARE OUT");
@@ -312,8 +320,16 @@ void Timer(int value) {
     }
     while(destroyedrows[moveattackerz]==true);
     moveattackerx=6; // re-initialize the x coordinate when the function is called so the attacker appear
+    if(timeforresource==1){
+        resourceholder= resourceholder+ addresourceforgatherers*10;
+        timeforresource=0;
+    }
+    else{
+        timeforresource ++; //checks for time to see when to increment resourceholders for RG
+    }
     glutPostRedisplay();
     glutTimerFunc(10 * 1000, Timer, 0);
+    
 }
 
 int main(int argc, char** argv) {
@@ -450,12 +466,11 @@ void Attacker(){
     glPopMatrix();
 }
 
-void Counter(std::string string, int x, int y) {
+void Counter(int x, int y) {
+    std::string string = std::to_string(resourceholder);
     glRasterPos2d(x, y);
     std::string text = "Resource: ";
     int tol =text.length();
-    //int resourceholder = atoi(string.c_str());
-    // std::string s = std::to_string(42);
     int len = string.length();
     int i;
     for(i=0;i<tol;i++){
@@ -469,10 +484,8 @@ void Counter(std::string string, int x, int y) {
 
 void DScreen(std::string string, int x, int y) {
     glRasterPos2d(x, y);
-    std::string text = "Defender cost is: ";
+    std::string text = "Defender cost: ";
     int tol =text.length();
-    //int resourceholder = atoi(string.c_str());
-    // std::string s = std::to_string(42);
     int len = string.length();
     int i;
     for(i=0;i<tol;i++){
@@ -488,8 +501,6 @@ void RGScreen(std::string string, int x, int y) {
     glRasterPos2d(x, y);
     std::string text = "Resource Gatherer cost: ";
     int tol =text.length();
-    //int resourceholder = atoi(string.c_str());
-    // std::string s = std::to_string(42);
     int len = string.length();
     int i;
     for(i=0;i<tol;i++){
