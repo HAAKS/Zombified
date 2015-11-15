@@ -48,21 +48,26 @@ float G =0;
 float B =0;
 int attackerwin=0; //a counter to keep track of how many times the attacker reached the house
 std::string resources ="100";
+int resourceholder ;
 
 void Keyboard(unsigned char key, int x, int y){
+    resourceholder = atoi(resources.c_str());
     int valueofchar = key-48;
     int temp;//to hold the row value -1 to compare with moveattackerz
     Gettingcorrespondingaxes(row,0);
     temp = cordinates[1]-1;
 
-    if(key=='d' ){
+    if(key=='d'){
         resourcegatherers[row][column] = false;
-        if(destroyedrows[temp] == false){ //if the row is NOT destroyed then you can place defender
+        if(destroyedrows[temp] == false && resourceholder>=25){
+        resourceholder =resourceholder-25;
+        resources = std::to_string(resourceholder);
         defenders[row][column] = true;
         bullet[row][column]=true;
         }
         column =0;
         row = 0;
+        
     }
     if(key=='p' && !pause){
         pause = true;
@@ -73,7 +78,9 @@ void Keyboard(unsigned char key, int x, int y){
     if(key=='r' ){
             defenders[row][column] = false;
             bullet[row][column]=false;
-        if(destroyedrows[temp] == false){
+        if(destroyedrows[temp] == false && resourceholder>=50){
+            resourceholder =resourceholder-50;
+            resources = std::to_string(resourceholder);
             resourcegatherers[row][column] = true;
             bullet[row][column]=true;
         }
@@ -159,6 +166,9 @@ void Hit(){
         if(hits==4){
             moveattackerx = -12;
             kills++;
+            resourceholder = atoi(resources.c_str());
+            resourceholder =resourceholder+20;
+            resources = std::to_string(resourceholder);
         }
 }
 }
