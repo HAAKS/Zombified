@@ -74,7 +74,6 @@ void Keyboard(unsigned char key, int x, int y){
         }
         column =0;
         row = 0;
-        
     }
     if(key=='p' && !pause){
         pause = true;
@@ -115,6 +114,7 @@ void Keyboard(unsigned char key, int x, int y){
     }
     glutPostRedisplay();
 }
+
 //checkes when defender/RG and attacker collides.
 void IsPresent(){
     int temp;
@@ -136,6 +136,7 @@ void IsPresent(){
             if(resourcegatherers[a][b] == true){
                 Gettingcorrespondingaxes(a, b);
                 glPushMatrix();
+                glColor3b(0.949, 0.831, 0.2);
                 glTranslatef(cordinates[0]+0.5, 0, cordinates[1]-1.5);
                 Gatherer();
                 glPopMatrix();
@@ -252,14 +253,12 @@ void Display(void) {
         EndGame("You won! El Sala 3al Zeen :D");
         pause = true;
     }
-    
     gluLookAt(lookfirst, looksecond, lookthird, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     Counter(-10, 10);
     DScreen("25", -6, 10); //display value of Defender
     RGScreen("50", 0, 10);//display value of RG
-    //EndGame("YOU ARE OUT");
     glFlush();
 }
 
@@ -355,9 +354,9 @@ void Timer(int value) {
     }
         while(destroyedrows[moveattackerz[cattacker]]==true); //check destroyedrows
     moveattackerx[cattacker]=6; // re-initialize the x coordinate when the function is called so the attacker appear
-    R[cattacker]= 0.914;
-    G[cattacker]= 0.678;
-    B[cattacker]= 0.192;
+    R[cattacker]= 0.49;
+    G[cattacker]= 0.059;
+    B[cattacker]= 0.19;
     cattacker++;
     if(timeforresource==5){
         resourceholder= resourceholder+ addresourceforgatherers*10;
@@ -391,6 +390,7 @@ int main(int argc, char** argv) {
 void Gatherer(){
     int i;
     glPushMatrix();
+    glColor3b(0.49, 0.059, 0.19);
     glRotatef(rotangle, 0, 1, 0);
     glPushMatrix();
     glScaled(0.5, 0.5, 0.5);
@@ -399,6 +399,7 @@ void Gatherer(){
     glPopMatrix();
     for(i =0; i<360*5;i++){
         glPushMatrix();
+        glColor3b(0.49, 0.059, 0.19);
         glScaled(0.1, 0.1, 0.1);
         glTranslatef(0, 0.01*i, 0);
         glRotatef(i, 0, 1, 0);
@@ -509,9 +510,11 @@ void Counter(int x, int y) {
     int len = string.length();
     int i;
     for(i=0;i<tol;i++){
+        glColor3b(0.98, 0.97, 0.84);
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
     }
     for(i =0;i<len;i++){
+        glColor3b(0.98, 0.97, 0.84);
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
     }
     glutPostRedisplay();
@@ -519,7 +522,13 @@ void Counter(int x, int y) {
 
 void DScreen(std::string string, int x, int y) {
     glRasterPos2d(x, y);
-    std::string text = "Defender cost: ";
+    glPushMatrix();
+    glColor3b(0.949, 0.83, 0.2);
+    glTranslatef(-4, 10.1, 0);
+    glScaled(0.6, 0.6, 0.6);
+    Defender();
+    glPopMatrix();
+    std::string text = "                 : ";
     int tol =text.length();
     int len = string.length();
     int i;
@@ -534,7 +543,13 @@ void DScreen(std::string string, int x, int y) {
 
 void RGScreen(std::string string, int x, int y) {
     glRasterPos2d(x, y);
-    std::string text = "Resource Gatherer cost: ";
+    glPushMatrix();
+    glColor3b(0.949, 0.83, 0.2);
+    glTranslatef(1, 9.5, 0);
+    glScaled(0.6, 0.6, 0.6);
+    Gatherer();
+    glPopMatrix();
+    std::string text = "        : ";
     int tol =text.length();
     int len = string.length();
     int i;
