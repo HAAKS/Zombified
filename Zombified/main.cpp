@@ -3,6 +3,7 @@
 #include <random>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 void Gatherer();
 void Defender(); //draws the defender
@@ -23,9 +24,8 @@ void DScreen(std::string string, int x, int y);
 void RGScreen(std::string string, int x, int y);
 void EndGame(std::string string);
 
-float lookfirst=0;
-float looksecond =20.0;
-float lookthird=25.0;
+float xcam=0;
+float zcam=25.9;
 float rotangle;
 bool defenders [6][10]; //to keep track which tile has defenders
 bool resourcegatherers [6][10];
@@ -35,7 +35,7 @@ int row;
 int column;
 bool destroyedrows [10]; //checks which row is destroyed
 GLboolean pause = false;
-GLboolean cameraview = false;
+bool cameraview = false;
 float moveattackerx [200];
 int moveattackerz[200] ;
 int cattacker =0;
@@ -55,19 +55,19 @@ int attackerwin=0; //a counter to keep track of how many times the attacker reac
 int resourceholder =100; //to get the final value Resources(R) available
 int addresourceforgatherers=0;
 int timeforresource; //In time function, so that every 20 seconds, its increments R from RG
+int thetV=0;
 
 void Keyboard(unsigned char key, int x, int y){
     int valueofchar = key-48;
+    if(key=='v'){
+        cameraview=true;
+        return;
+    }
     int temp;//to hold the row value -1 to compare with moveattackerz
     Gettingcorrespondingaxes(row,0);
     temp = cordinates[1]-1;
-
-    if(key=='d'&& row!=0 && column!=0 &&!pause){
-        if( resourcegatherers[row][column] == true){
-            addresourceforgatherers--;
-            resourcegatherers[row][column] = false;
-        }
-        if(destroyedrows[temp] == false && resourceholder>=25){
+    if(key=='d'&& row!=0 && column!=0 &&!pause && !destroyedrows[temp]){
+        if(resourcegatherers[row][column] == false && resourceholder>=25){
         resourceholder =resourceholder-25;
         defenders[row][column] = true;
         bullet[row][column]=true;
@@ -81,10 +81,8 @@ void Keyboard(unsigned char key, int x, int y){
     else if(key=='p' && pause ){
         pause = false;
     }
-    if(key=='r' && row!=0 && column!=0 &&!pause){
-            defenders[row][column] = false;
-            bullet[row][column]=false;
-        if(destroyedrows[temp] == false && resourceholder>=50){
+    if(key=='r' && row!=0 && column!=0 &&!pause && !destroyedrows[temp]){
+        if(defenders[row][column] ==false && resourceholder>=50){
             resourceholder =resourceholder-50;
             resourcegatherers[row][column] = true;
             addresourceforgatherers++;
@@ -109,9 +107,7 @@ void Keyboard(unsigned char key, int x, int y){
     else if(valueofchar > 0 && valueofchar <10 && row !=0) {
         column=key-48;
             }
-    if(key=='v'){
-        cameraview=true;
-    }
+ 
     glutPostRedisplay();
 }
 
@@ -239,7 +235,6 @@ void Display(void) {
             }
         }
     }
- 
     for(counter =1;counter<12;counter+=2){
         if(destroyedrows[counter]==true){
             Killtherow(counter);
@@ -253,7 +248,22 @@ void Display(void) {
         EndGame("You won! El Sala 3al Zeen :D");
         pause = true;
     }
-    gluLookAt(lookfirst, looksecond, lookthird, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    if(cameraview){
+    xcam =25*sin(thetV*3.14159265/180);
+    zcam =25*cos(thetV*3.14159265/180);}
+    else{
+        xcam =0;
+        zcam = 25.0;
+    }
+    if(thetV==360){
+        cameraview=false;
+        xcam =0;
+        zcam = 25.0;
+    }
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45.0f, 300 / 300, 0.1f, 300.0f);
+    gluLookAt(xcam, 20.0, zcam, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     Counter(-10, 10);
@@ -278,27 +288,16 @@ void Anim() {
         
     }
     if(cameraview){
-        if(lookfirst<360){
-            lookfirst+=1.5;
-            lookfirst=cos(lookfirst*0.5)+lookfirst;
-            //looksecond=sin(looksecond*0.5);
-    }
-        else{
-            if(looksecond<80)
-                lookfirst+=0.5;
-            else{
-                
-            }
-            //            else{
-            //                if(lookthird<40)
-            //                lookthird+=0.5;
-            //            }
-        }
-    }
+        thetV++;
+       
+          }
     glutPostRedisplay();
 }
 
 void Killtherow(int counter){
+    if(cameraview){
+        counter=100;
+    }
     glPushMatrix();
     glColor3f(0.47, 0.569, 0.302);
     glBegin(GL_POLYGON);
@@ -366,14 +365,14 @@ void Timer(int value) {
         timeforresource ++; //checks for time to see when to increment resourceholders for RG
     }
     glutPostRedisplay();
-    glutTimerFunc(4 * 1000, Timer, 0);
+    glutTimerFunc(3 * 1000, Timer, 0);
 }
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitWindowSize(900, 1000);
     glutInitWindowPosition(150, 150);
-    glutCreateWindow("");
+    glutCreateWindow("Zombified");
     glutDisplayFunc(Display);
     glutKeyboardFunc(Keyboard);
     glutTimerFunc(0, Timer, 0);
@@ -381,9 +380,6 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
     glEnable(GL_DEPTH_TEST);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(45.0f, 300 / 300, 0.1f, 300.0f);
     glutMainLoop();
 }
 
